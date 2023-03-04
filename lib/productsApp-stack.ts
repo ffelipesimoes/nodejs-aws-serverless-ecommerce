@@ -36,5 +36,6 @@ export class ProductsAppStack extends cdk.Stack {
             sourceMap: false
           }
        } )
+      this.productsDdb.grantReadData(this.productsFetchHandler)
   }
 }
