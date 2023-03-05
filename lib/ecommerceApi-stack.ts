@@ -14,6 +14,8 @@ export class EcommerceApiStack extends cdk.Stack {
     super(scope, id, props)
 
     const logGroup = new cwlogs.LogGroup(this, "ECommerceApiLogs")
+    logGroup.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY)
+
     const api = new apigateway.RestApi(this, "ECommerceApi", {
       restApiName: "ECommerceApi",
       cloudWatchRole: true,
@@ -43,6 +45,7 @@ export class EcommerceApiStack extends cdk.Stack {
     // Route GET /products/{id}
     const productIdResource = productsResource.addResource("{id}")
     productIdResource.addMethod("GET", productsFetchIntegration)
+
     const productsAdminIntegration = new apigateway.LambdaIntegration(props.productsAdminHandler)
 
     // Route POST /products
