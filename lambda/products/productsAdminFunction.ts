@@ -21,23 +21,22 @@ export async function handler(
       if(event.httpMethod === "PUT") {
         console.log(`PUT /products/${productId}`)
         return {
-          statusCode: 201,
+          statusCode: 200,
           body: `PUT /products/${productId}`
         }
 
       } else if (event.httpMethod === "DELETE") {
         console.log(`DELETE /products/${productId}`)
         return {
-          statusCode: 201,
+          statusCode: 200,
           body: `DELETE /products/${productId}`
         }
-
       }
     }
 
     return {
       statusCode: 400,
-      body: "BAD Request"
+      body: "Bad Request"
     }
 
   }
