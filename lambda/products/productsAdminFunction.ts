@@ -15,7 +15,7 @@ export async function handler(
         statusCode: 201,
         body: "POST /products" 
       }
-    } else if (event.resource === "products/{id}") {
+    } else if (event.resource === "/products/{id}") {
       const productId = event.pathParameters!.id as string 
       
       if(event.httpMethod === "PUT") {
