@@ -70,7 +70,7 @@ export class ProductsAppStack extends cdk.Stack {
         }
       )
 
-      this.productsDdb.grantReadData(this.productsAdminHandler)
+      this.productsDdb.grantWriteData(this.productsAdminHandler)
 
   }
 }
