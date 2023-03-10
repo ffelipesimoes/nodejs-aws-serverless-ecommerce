@@ -45,7 +45,9 @@ export class ProductsAppStack extends cdk.Stack {
           environment: {
             PRODUCTS_DDB: this.productsDdb.tableName
           },
-          layers: [productsLayer]
+          layers: [productsLayer],
+          tracing: lambda.Tracing.ACTIVE,
+          insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0
         }
       )
 
@@ -66,7 +68,9 @@ export class ProductsAppStack extends cdk.Stack {
            environment: {
              PRODUCTS_DDB: this.productsDdb.tableName
            },
-           layers: [productsLayer]
+           layers: [productsLayer],
+           tracing: lambda.Tracing.ACTIVE,
+           insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0
         }
       )
 
