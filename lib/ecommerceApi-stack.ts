@@ -36,6 +36,11 @@ export class EcommerceApiStack extends cdk.Stack {
       }
     })
 
+    this.createProductsService(props, api)
+
+  }
+
+  private createProductsService(props: ECommerceApiStackProps, api: apigateway.RestApi) {
     const productsFetchIntegration = new apigateway.LambdaIntegration(props.productsFetchHandler)
 
     // Route GET /products
@@ -56,6 +61,5 @@ export class EcommerceApiStack extends cdk.Stack {
 
     // Route DELETE /products/{id}
     productIdResource.addMethod("DELETE", productsAdminIntegration)
-
   }
 }
