@@ -39,6 +39,12 @@ export class OrderRepository {
   }).promise()
 
   return order
-  
+ }
+
+ async getAllOrders(): Promise<Order[]> {
+  const data = await this.ddbClient.scan({
+    TableName: this.ordersDdb
+  }).promise()
+  return data.Items as Order[]
  }
 }
