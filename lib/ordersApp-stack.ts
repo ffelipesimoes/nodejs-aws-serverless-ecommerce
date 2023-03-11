@@ -30,5 +30,13 @@ export class OrdersAppStack extends cdk.Stack {
       readCapacity: 1,
       writeCapacity: 1
     })
+
+    //Orders Layer
+    const ordersLayerArn = ssm.StringParameter.valueForStringParameter(this, "ordersLayerVersionArn" )
+    const ordersLayer = lambda.LayerVersion.fromLayerVersionArn(this, "ordersLayerVersionArn", ordersLayerArn)
+
+    //Products Layer
+    const productsLayerArn = ssm.StringParameter.valueForStringParameter(this, "ProductsLayerVersionArn" )
+    const productsLayer = lambda.LayerVersion.fromLayerVersionArn(this, "ProductsLayerVersionArn", productsLayerArn)
   }
 }
