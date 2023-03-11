@@ -1,3 +1,5 @@
+***[English below]***
+
 # O projeto
 O projeto "nodejs-aws-serverless-ecommerce" é uma aplicação de comércio eletrônico desenvolvida em Node.js usando TypeScript e projetada para ser implantada no ambiente de nuvem da Amazon Web Services (AWS). Neste arquivo README, vou explicar como implantar a aplicação na AWS usando o AWS CDK (Cloud Development Kit).
 
@@ -58,6 +60,8 @@ Se você quiser excluir a implantação da aplicação, execute o seguinte coman
 cdk destroy
 ```
 Isso excluirá todos os recursos da aplicação implantada.
+
+***[Português acima]***
 
 
 # The project
