@@ -49,7 +49,7 @@ export class OrdersAppStack extends cdk.Stack {
     // Creating a function on lambda
     this.ordersHandler = new lambdaNodeJS.NodejsFunction(this, "OrdersFunction", {
          functionName: "OrdersFunction",
-         entry: "lambda/products/ordersFunction.ts",
+         entry: "lambda/orders/ordersFunction.ts",
          handler: "handler",
          memorySize: 128,
          timeout: cdk.Duration.seconds(5),
