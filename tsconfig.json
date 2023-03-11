@@ -31,7 +31,7 @@
         "lambda/products/layers/productEventsLayer/nodejs/productEvent"
       ],
       "/opt/nodejs/ordersLayer": [
-        "lambda/orders/layers/ordersLayer/orderRepository"
+        "lambda/orders/layers/ordersLayer/nodejs/orderRepository"
       ]
     }
   },
