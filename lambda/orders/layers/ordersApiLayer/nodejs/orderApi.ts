@@ -41,5 +41,5 @@ export interface OrderResponse {
     type: ShippingType,
     carrier: CarrierType
   }
-  productsIds: OrderProductResponse
+  products: OrderProductResponse[]
 }
