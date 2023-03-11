@@ -33,12 +33,35 @@ export async function handler(
         if(email) {
           if(orderId){
             //get one order from an user
+            try {
+              const orders = await orderRepository.getOrder(email, orderId)
+              return{
+                statusCode: 200,
+                body: JSON.stringify(convertToOrderResponse(orders))
+              }
+            } catch (error) {
+              console.log((<Error>error).message)
+              return{
+                statusCode: 400,
+                body: (<Error>error).message
+              }
+            }
           } else {
             //get all orders from an user
+            const orders = await orderRepository.getOrdersByEmail(email)
+            return{
+              statusCode: 200,
+              body: JSON.stringify(orders.map(convertToOrderResponse))
+            }
           }
         }
       } else {
-        //get all orders
+        const orders = await orderRepository.getAllOrders()
+        return{
+          statusCode: 200,
+          body: JSON.stringify(orders.map(convertToOrderResponse))
+        }
+
       }
 
     } else if (method === "POST"){
@@ -60,8 +83,6 @@ export async function handler(
           body: "Some products was not found"
         }
       }
-
-
     } else if (method === "DELETE"){
       console.log("/DELETE Order")   
       const email = event.queryStringParameters!.email
