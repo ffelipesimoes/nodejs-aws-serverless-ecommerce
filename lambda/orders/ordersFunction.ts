@@ -44,6 +44,24 @@ export async function handler(
     } else if (method === "POST"){
       console.log("/POST Order")
 
+      const orderRequest = JSON.parse(event.body!) as OrderRequest
+      const products = await productRepository.getProductsByIds(orderRequest.productsIds)
+      if(products.length === orderRequest.productsIds.length) {
+        const order = buildOrder(orderRequest, products)
+        const orderCreated = await orderRepository.createOrder(order)
+
+        return{
+          statusCode: 201,
+          body: JSON.stringify(convertToOrderResponse(orderCreated))
+        }
+      } else {
+        return{
+          statusCode: 404,
+          body: "Some products was not found"
+        }
+      }
+
+
     } else if (method === "DELETE"){
       console.log("/DELETE Order")   
       const email = event.queryStringParameters!.email
