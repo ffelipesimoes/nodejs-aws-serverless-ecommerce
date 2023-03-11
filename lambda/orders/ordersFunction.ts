@@ -85,11 +85,24 @@ export async function handler(
       }
     } else if (method === "DELETE"){
       console.log("/DELETE Order")   
-      const email = event.queryStringParameters!.email
-      const orderId = event.queryStringParameters!.orderId   
-
+      const email = event.queryStringParameters!.email!
+      const orderId = event.queryStringParameters!.orderId!
+      
+      try {
+        const orderDeleted = await orderRepository.deleteOrder(email, orderId)
+        return{
+          statusCode: 200,
+          body: JSON.stringify(convertToOrderResponse(orderDeleted))
+        }
+      } catch (error) {
+        console.log((<Error>error).message)
+        return{
+          statusCode: 400,
+          body: (<Error>error).message
+        }
+      }
     }
-
+    
     return{
       statusCode: 400,
       body: "bad request"
