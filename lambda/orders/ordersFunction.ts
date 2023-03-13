@@ -139,8 +139,9 @@ function convertToOrderResponse(order: Order): OrderResponse {
 function buildOrder(orderRequest: OrderRequest, products: Product[]): Order {
    const orderProducts: OrderProductResponse[] = []
    let totalPrice = 0
-
+   
    products.forEach((product) => {
+    totalPrice += product.price
     orderProducts.push({
       code: product.code,
       price: product.price
