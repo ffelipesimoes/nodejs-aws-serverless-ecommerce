@@ -114,7 +114,7 @@ export class OrdersAppStack extends cdk.Stack {
       actions: ["dynamodb:PutItem"],
       resources: [props.eventsDdb.tableArn],
       conditions: {
-        ['ForAllValues:Stringlike'] : {
+        ['ForAllValues:StringLike'] : {
           'dynamodb:LeadingKeys': ['#order_*']
         }
       }
