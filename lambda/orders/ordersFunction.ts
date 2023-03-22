@@ -1,6 +1,8 @@
 import { DynamoDB, SNS } from 'aws-sdk'
 import { Order, OrderRepository } from '/opt/nodejs/ordersLayer' 
 import { Product, ProductRepository } from '/opt/nodejs/productsLayer'
+import { v4 as uuid } from 'uuid'
+
 
 import * as AWSXRay from "aws-xray-sdk"
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda'
@@ -74,17 +76,18 @@ export async function handler(
       const products = await productRepository.getProductsByIds(orderRequest.productIds)
       if(products.length === orderRequest.productIds.length) {
         const order = buildOrder(orderRequest, products)
-        const orderCreated = await orderRepository.createOrder(order)
+        const orderCreatedPromise = orderRepository.createOrder(order)
 
-        const eventResult = await sendOrderEvent(orderCreated, OrderEventType.CREATED, lambdaRequestId)
+        const eventResultPromise = sendOrderEvent(order, OrderEventType.CREATED, lambdaRequestId)
+        const results = await Promise.all([orderCreatedPromise, eventResultPromise])
         console.log(`
-        Order created event sent - OrderId: ${orderCreated.sk}
-        - MessageId: ${eventResult.MessageId}
+        Order created event sent - OrderId: ${order.sk}
+        - MessageId: ${results[1].MessageId}
         `)
 
         return{
           statusCode: 201,
-          body: JSON.stringify(convertToOrderResponse(orderCreated))
+          body: JSON.stringify(convertToOrderResponse(order))
         }
       } else {
         return{
@@ -190,6 +193,8 @@ function buildOrder(orderRequest: OrderRequest, products: Product[]): Order {
 
    const order: Order = {
     pk: orderRequest.email,
+    sk: uuid(),
+    createdAt: Date.now(),
     billing: {
       payment: orderRequest.payment,
       totalPrice: totalPrice
