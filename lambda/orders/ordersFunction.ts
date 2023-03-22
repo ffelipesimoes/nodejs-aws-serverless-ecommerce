@@ -71,8 +71,8 @@ export async function handler(
       console.log("/POST Order")
 
       const orderRequest = JSON.parse(event.body!) as OrderRequest
-      const products = await productRepository.getProductsByIds(orderRequest.productsIds)
-      if(products.length === orderRequest.productsIds.length) {
+      const products = await productRepository.getProductsByIds(orderRequest.productIds)
+      if(products.length === orderRequest.productIds.length) {
         const order = buildOrder(orderRequest, products)
         const orderCreated = await orderRepository.createOrder(order)
 
