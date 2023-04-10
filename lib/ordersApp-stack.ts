@@ -9,8 +9,6 @@ import * as iam from "aws-cdk-lib/aws-iam"
 import * as sqs from "aws-cdk-lib/aws-sqs"
 import * as lambdaEventSource from "aws-cdk-lib/aws-lambda-event-sources"
 
-
-
 import { Construct } from 'constructs'
 
 interface OrdersAppStackProps extends cdk.StackProps {
@@ -147,8 +145,17 @@ export class OrdersAppStack extends cdk.Stack {
       }
     }))
 
+    const orderEventsDlq = new sqs.Queue(this, "OrderEventsDlq", {
+      queueName: "order-events-dlq",
+      retentionPeriod: cdk.Duration.days(10)
+    })
+
     const orderEventsQueue = new sqs.Queue(this, "OrderEventsQueue", {
-      queueName: "order-events"
+      queueName: "order-events",
+      deadLetterQueue: {
+        maxReceiveCount: 3,
+        queue: orderEventsDlq
+      }
     })
 
     ordersTopic.addSubscription(new subs.SqsSubscription(orderEventsQueue, {
