@@ -114,6 +114,8 @@ export class ProductsAppStack extends cdk.Stack {
         }
       )
 
+      this.productsDdb.grantWriteData(this.productsAdminHandler)
+
       productsEventsHandler.grantInvoke(this.productsAdminHandler)
 
       const eventsDdbPolicy = new iam.PolicyStatement({
