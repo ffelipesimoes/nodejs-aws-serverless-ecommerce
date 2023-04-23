@@ -62,6 +62,10 @@ async function processRecord(record: S3EventRecord){
     const invoice = JSON.parse(object.Body!.toString('utf-8')) as InvoiceFile
     console.log(invoice)
 
+    if(invoice.invoiceNumber.length >= 5) {
+
+   
+
     const createInvoicePromise =  invoiceRepository.create({
       pk: `#invoice_${invoice.customerName}`,
       sk: invoice.invoiceNumber,
@@ -83,7 +87,11 @@ async function processRecord(record: S3EventRecord){
 
     await Promise.all([createInvoicePromise, deleteObjectPromise, updateInvoicePromise, sendStatusPromise])
 
-    
+  } else {
+    console.error(`Invoice number too short`)
+    await invoiceWSService.sendInvoiceStatus(key, invoiceTransaction.connectionId, InvoiceTransactionStatus.NON_VALID_INVOICE_NUMBER)
+    await invoiceTransactionRepository.updateInvoiceTransaction(key, InvoiceTransactionStatus.NON_VALID_INVOICE_NUMBER)
+  }
   } catch (error) {
     console.log((<Error>error).message)
   }
