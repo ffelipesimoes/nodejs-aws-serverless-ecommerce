@@ -155,7 +155,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
       entry: "lambda/invoices/invoiceImportFunction.ts",
       handler: "handler",
       memorySize: 128,
-      timeout: cdk.Duration.seconds(2),
+      timeout: cdk.Duration.seconds(5),
       bundling: {
         minify: true,
         sourceMap: false

@@ -59,18 +59,18 @@ export class InvoiceTransactionRepository {
       await this.ddbClient.update({
         TableName: this.invoiceTransactionDdb,
         Key: {
-          pk: '#transaction',
+          pk: "#transaction",
           sk: key,
         },
         ConditionExpression: 'attribute_exists(pk)',
-        UpdateExpression: 'set #transactionStatus = :s',
-        ExpressionAttributeNames: {
+        UpdateExpression: 'set transactionStatus = :s',
+        ExpressionAttributeValues: {
           ':s': status,
-        },
+        }
       }).promise();
       return true
 
-    } catch (ConditionCheckFailedException) {
+    } catch (ConditionalCheckFailedException) {
       console.log('Invoice transaction not found');
       return false;
     }

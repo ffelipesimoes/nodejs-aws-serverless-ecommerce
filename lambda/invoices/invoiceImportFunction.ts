@@ -26,11 +26,13 @@ export async function handler(event: S3Event, context: Context): Promise<void> {
 
    const promises: Promise<void>[] = []
 
-   event.Records.forEach(record => {
+   event.Records.forEach((record) => {
     promises.push(processRecord(record))
   })
 
   await Promise.all(promises)
+
+  return
  
   }
 
@@ -58,6 +60,7 @@ async function processRecord(record: S3EventRecord){
     }).promise()
 
     const invoice = JSON.parse(object.Body!.toString('utf-8')) as InvoiceFile
+    console.log(invoice)
 
     const createInvoicePromise =  invoiceRepository.create({
       pk: `#invoice_${invoice.customerName}`,
