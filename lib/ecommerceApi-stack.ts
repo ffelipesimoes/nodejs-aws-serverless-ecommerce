@@ -54,8 +54,41 @@ export class EcommerceApiStack extends cdk.Stack {
   }
 
   private createCognitoAuth() {
+
+    const postConfirmationHandler = new lambdaNodeJS.NodejsFunction(this, "PostConfirmationFunction", {
+      functionName: "PostConfirmationFunction",
+      entry: "lambda/auth/postConfirmationFunction.ts",
+      handler: "handler",
+      memorySize: 128,
+      timeout: cdk.Duration.seconds(2),
+      bundling: {
+        minify: true,
+        sourceMap: false
+      },
+      tracing: lambda.Tracing.ACTIVE,
+      insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0
+    })
+
+    const preAuthenticationHandler = new lambdaNodeJS.NodejsFunction(this, "PreAuthenticationFunction", {
+      functionName: "PreAuthenticationFunction",
+      entry: "lambda/auth/preAuthenticationFunction.ts",
+      handler: "handler",
+      memorySize: 128,
+      timeout: cdk.Duration.seconds(2),
+      bundling: {
+        minify: true,
+        sourceMap: false
+      },
+      tracing: lambda.Tracing.ACTIVE,
+      insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0
+    })
+
     //Cognito customer Userpool
     this.customerPool = new cognito.UserPool(this, "CustomerPool", {
+      lambdaTriggers: {
+        preAuthentication: preAuthenticationHandler,
+        postConfirmation: postConfirmationHandler
+      },
       userPoolName: "CustomerPool",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       selfSignUpEnabled: true,
@@ -103,6 +136,48 @@ export class EcommerceApiStack extends cdk.Stack {
     const customerMobileScope = new cognito.ResourceServerScope({
       scopeName: "mobile",
       scopeDescription: "Access for mobile clients"
+    })
+
+    const customerResourceServer = this.customerPool.addResourceServer("CustomerResourceServer", {
+      identifier: "customer",
+      userPoolResourceServerName: "CustomerResourceServer",
+      scopes: [
+        customerWebScope, 
+        customerMobileScope
+      ]
+    })
+
+    this.customerPool.addClient("customer-web-client", {
+      userPoolClientName: "customerWebClient",
+      authFlows: {
+        userPassword: true,
+      },
+      accessTokenValidity: cdk.Duration.minutes(60),
+      refreshTokenValidity: cdk.Duration.days(7),
+      oAuth: {
+        scopes: [
+          cognito.OAuthScope.resourceServer(customerResourceServer, customerWebScope)
+        ],
+      }
+    })
+
+    this.customerPool.addClient("customer-mobile-client", {
+      userPoolClientName: "customerMobileClient",
+      authFlows: {
+        userPassword: true,
+      },
+      accessTokenValidity: cdk.Duration.minutes(60),
+      refreshTokenValidity: cdk.Duration.days(7),
+      oAuth: {
+        scopes: [
+          cognito.OAuthScope.resourceServer(customerResourceServer, customerMobileScope)
+        ],
+      }
+    })
+
+   this.productsAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(this, "ProductsAuthorizer", {
+    authorizerName: "ProductsAuthorizer",
+    cognitoUserPools: [this.customerPool]
     })
 
   }
@@ -201,12 +276,24 @@ export class EcommerceApiStack extends cdk.Stack {
     
     const productsResource = api.root.addResource("products")
 
+    const productsFetchWebMobileIntegrationOption = {
+      authorizer: this.productsAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizationScopes: ["customer/web", "customer/mobile"]
+    }
+
+    const productsFetchWeIntegrationOption = {
+      authorizer: this.productsAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizationScopes: ["customer/web"]
+    }
+
     // Route GET /products
-    productsResource.addMethod("GET", productsFetchIntegration)
+    productsResource.addMethod("GET", productsFetchIntegration, productsFetchWebMobileIntegrationOption)
 
     // Route GET /products/{id}
     const productIdResource = productsResource.addResource("{id}")
-    productIdResource.addMethod("GET", productsFetchIntegration)
+    productIdResource.addMethod("GET", productsFetchIntegration, productsFetchWeIntegrationOption)
 
     const productsAdminIntegration = new apigateway.LambdaIntegration(props.productsAdminHandler)
 
