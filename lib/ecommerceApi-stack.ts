@@ -2,6 +2,8 @@ import * as cdk from "aws-cdk-lib"
 import * as lambdaNodeJS from "aws-cdk-lib/aws-lambda-nodejs"
 import * as apigateway from "aws-cdk-lib/aws-apigateway"
 import * as cwlogs from "aws-cdk-lib/aws-logs"
+import * as cognito from "aws-cdk-lib/aws-cognito"
+import * as lambda from "aws-cdk-lib/aws-lambda"
 import { Construct } from 'constructs'
 
 interface ECommerceApiStackProps extends cdk.StackProps {
@@ -12,6 +14,11 @@ interface ECommerceApiStackProps extends cdk.StackProps {
 }
 
 export class EcommerceApiStack extends cdk.Stack {
+
+  private productsAuthorizer: apigateway.CognitoUserPoolsAuthorizer;
+  private customerPool: cognito.UserPool;
+  private adminPool: cognito.UserPool;
+
   constructor(scope: Construct, id: string, props: ECommerceApiStackProps){
     super(scope, id, props)
 
@@ -38,9 +45,65 @@ export class EcommerceApiStack extends cdk.Stack {
       }
     })
 
+    this.createCognitoAuth()
+
     this.createProductsService(props, api)
 
     this.createOrdersServices(props, api) 
+
+  }
+
+  private createCognitoAuth() {
+    //Cognito customer Userpool
+    this.customerPool = new cognito.UserPool(this, "CustomerPool", {
+      userPoolName: "CustomerPool",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      selfSignUpEnabled: true,
+      autoVerify: {
+        email: true,
+        phone: false
+      },
+      userVerification: {
+        emailSubject: "Verify your email for our ECommerce App!",
+        emailBody: "Hello {username}, Thanks for signing up to our ECommerce App! Your verification code is {####}",
+        emailStyle: cognito.VerificationEmailStyle.CODE,
+      },
+      signInAliases: {
+        username: false,
+        email: true
+      },
+      standardAttributes: {
+        fullname: {
+          required: true,
+          mutable: false
+        },
+      },
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: true,
+        requireUppercase: true,
+        requireDigits: true,
+        requireSymbols: true,
+        tempPasswordValidity: cdk.Duration.days(3)
+      },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+    })
+
+    this.customerPool.addDomain("CustomerDomain", {
+      cognitoDomain: {
+        domainPrefix: "fs-ecommerce-customer"
+      }
+    })
+
+    const customerWebScope = new cognito.ResourceServerScope({
+      scopeName: "web",
+      scopeDescription: "Access for web clients"
+    })
+
+    const customerMobileScope = new cognito.ResourceServerScope({
+      scopeName: "mobile",
+      scopeDescription: "Access for mobile clients"
+    })
 
   }
 
